@@ -305,6 +305,36 @@ $$PREBID_GLOBAL$$.allBidsAvailable = function () {
   return bidmanager.bidsBackAll();
 };
 
+/*
+ * Render outstream ads without needing an adserver. If called before renderer
+ * loaded, relies on adapter calling postMessage with 'outstreamRendererLoaded'
+ * message and bid object. If calling after renderers have been loaded,
+ * pass `true` as first parameter to immediately invoke ad rendering.
+ * TODO: rename, test, refactor function
+ */
+$$PREBID_GLOBAL$$.renderAdWithoutServer = function(post) {
+  const winners = targeting.getWinningBids();
+  const winnerIds = winners.map(winner => winner.adId);
+
+  if (!post) {
+    // this works if called before renderer loaded, e.g., in bidsBackHandler
+    addEventListener('message', event => {
+      let data;
+      try { data = JSON.parse(event.data); }
+      catch (error) { return; }
+
+      if (data.message !== 'outstreamRendererLoaded') { return; }
+
+      if (winnerIds.includes(data.bid.adId)) {
+        $$PREBID_GLOBAL$$.renderAd(window, data.bid.adId);
+      }
+    });
+  } else {
+    // this works if called after renderer loaded, e.g., from devtools console
+    winnerIds.forEach(bidId => { $$PREBID_GLOBAL$$.renderAd(window, bidId); });
+  }
+};
+
 /**
  * This function will render the ad (based on params) in the given iframe document passed through.
  * Note that doc SHOULD NOT be the parent document page as we can't doc.write() asynchronously

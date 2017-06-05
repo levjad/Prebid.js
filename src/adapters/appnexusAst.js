@@ -279,8 +279,11 @@ function AppnexusAstAdapter() {
     }, handleOutstreamRendererEvents.bind(bid));
   }
 
-  function onOutstreamRendererLoaded() {
-    // setup code for renderer, if any
+  function onOutstreamRendererLoaded(bid) {
+    postMessage(JSON.stringify({
+      message: 'outstreamRendererLoaded',
+      bid
+    }), utils.getTopWindowUrl());
   }
 
   function handleOutstreamRendererEvents(id, eventName) {
