@@ -280,10 +280,8 @@ function AppnexusAstAdapter() {
   }
 
   function onOutstreamRendererLoaded(bid) {
-    postMessage(JSON.stringify({
-      message: 'outstreamRendererLoaded',
-      bid
-    }), utils.getTopWindowUrl());
+    bid.renderer.loaded = true;
+    bid.renderer.process();
   }
 
   function handleOutstreamRendererEvents(id, eventName) {
@@ -316,6 +314,7 @@ function AppnexusAstAdapter() {
             id: ad.renderer_id,
             url: ad.renderer_url,
             config: { adText: `AppNexus Outstream Video Ad via Prebid.js` },
+            loaded: false,
             callback: () => onOutstreamRendererLoaded.call(null, bid)
           });
 
